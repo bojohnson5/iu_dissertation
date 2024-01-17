@@ -12,7 +12,8 @@
   doc,
 ) = {
   set text(font: "Linux Libertine", size: 12pt)
-  set par(leading: 1.5em)
+  show par: set block(spacing: 1.5em)
+  set par(leading: 1.5em, first-line-indent: 1em)
   set page(numbering: "i", margin: (x: 1in, y: 1in), 
     paper: "us-letter",
     footer: locate(loc => {
@@ -21,6 +22,38 @@
       ]
     })
   )
+  show heading.where(level: 1): it => {
+    counter(math.equation).update(0)
+    it
+  }
+  show math.equation: it => {
+    if it.has("label") {
+      math.equation(block: true,
+        numbering: it1 => {
+          locate(loc => {
+            let count = counter(heading.where(level: 1)).at(loc).last()
+            numbering("(1.1)", count, it1)
+          })
+        }, it)
+    }
+    else {
+      it
+    }
+  }
+  show ref: it => {
+    let el = it.element
+    if el != none and el.func() == math.equation {
+      link(el.location(),
+        locate(loc => {
+          let count = counter(heading.where(level: 1)).at(loc).last()
+          numbering("(1.1)", count, counter(math.equation).at(el.location()).at(0) + 1)
+        })
+      )
+    }
+    else {
+      it
+    }
+  }
 
   grid(
     columns: (1fr),
@@ -136,7 +169,7 @@
       #v(12pt)
     ]
   }
-  
+ 
   doc
 }
 
